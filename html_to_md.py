@@ -338,6 +338,11 @@ def process_images(article: Tag, html_file: Path, article_dir: Path, warnings: l
 
 
 def remove_unwanted_elements(article: Tag) -> None:
+    """
+    RU: Удаляет меню, рекламу, скрипты, комментарии и служебные блоки из статьи.
+    EN: Remove menus, ads, scripts, comments, and non-article blocks.
+    """
+
     unwanted = [
         "script",
         "style",
@@ -372,12 +377,22 @@ def remove_unwanted_elements(article: Tag) -> None:
 
 
 def remove_html_links(article: Tag) -> None:
+    """
+    RU: Убирает теги ссылок, сохраняя их текст и вложенные изображения.
+    EN: Remove link tags while preserving their text and nested images.
+    """
+
     # Оставляем текст ссылок, но убираем HTML <a>.
     for link in list(article.find_all("a")):
         link.unwrap()
 
 
 def normalize_markdown(markdown: str) -> str:
+    """
+    RU: Приводит переносы строк к единому виду и удаляет лишние пустые строки.
+    EN: Normalize line endings and collapse excessive blank lines.
+    """
+
     markdown = markdown.replace("\r\n", "\n")
 
     # Удаляем чрезмерные пустые строки.
@@ -391,6 +406,11 @@ def normalize_markdown(markdown: str) -> str:
 
 
 def make_frontmatter(slug: str, title: str, category: str, description: str,) -> str:
+    """
+    RU: Формирует YAML-метаданные статьи: slug, title, description, category, status, language, order.
+    EN: Build article YAML metadata: slug, title, description, category, status, language, order.
+    """
+
     return "\n".join([
         "---",
         f"slug: {yaml_quote(slug)}",
@@ -405,6 +425,10 @@ def make_frontmatter(slug: str, title: str, category: str, description: str,) ->
 
 
 def convert_file(html_file: Path, overwrite: bool = False,) -> dict:
+    """
+    RU: Обрабатывает один HTML: категории, текст, изображения, Markdown и результат для журнала.
+    EN: Convert one HTML file: categories, text, images, Markdown, and log result.
+    """
     
     result = {
         "source": str(html_file),
@@ -536,14 +560,23 @@ def convert_file(html_file: Path, overwrite: bool = False,) -> dict:
         result["images"] = images_count
         result["warnings"] = " | ".join(warnings)
 
-    except Exception as error:
+    # RU: Перехватываем любые ошибки при обработке отдельного HTML-файла,
+    #     чтобы продолжить конвертацию остальных файлов.
+    # EN: Catch all errors while processing an individual HTML file
+    #     so that conversion can continue with the remaining files.
+    except Exception as error:  # noqa: BLE001
         result["status"] = "ERROR"
         result["warnings"] = str(error)
-
+        
     return result
 
 
 def find_html_files() -> list[Path]:
+    """
+    RU: Рекурсивно находит HTML/HTM, исключая папку результатов и index.html/index.htm.
+    EN: Recursively find HTML/HTM, excluding output and index.html/index.htm.
+    """
+
     html_files = []
 
     for path in SOURCE_DIR.rglob("*"):
@@ -570,6 +603,11 @@ def find_html_files() -> list[Path]:
 
 
 def save_log(results: list[dict]) -> None:
+    """
+    RU: Сохраняет CSV-журнал результатов с кодировкой UTF-8 BOM для Excel.
+    EN: Save a CSV conversion log with UTF-8 BOM for Excel compatibility.
+    """
+
     OUTPUT_DIR.mkdir(
         parents=True,
         exist_ok=True,
@@ -600,6 +638,11 @@ def save_log(results: list[dict]) -> None:
 
 
 def main() -> None:
+    """
+    RU: Разбирает аргументы запуска, выполняет конвертацию и выводит статистику.
+    EN: Parse CLI arguments, run conversion, and print summary statistics.
+    """
+
     parser = argparse.ArgumentParser(
         description="Convert downloaded HTML to Markdown."
     )
